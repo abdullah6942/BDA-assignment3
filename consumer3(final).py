@@ -6,7 +6,7 @@ from pymongo import MongoClient
 
 # Initialize MongoDB client and connect to the database
 client = MongoClient('localhost', 27017)
-db = client['mydatabase']
+db = client['DB-con3']
 collection = db['frequent_itemsets']  # MongoDB collection to store frequent itemsets
 
 # Initialize Kafka consumer
