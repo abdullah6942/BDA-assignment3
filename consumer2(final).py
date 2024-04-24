@@ -16,7 +16,7 @@ min_support = 5  # Adjust as needed
 
 # Initialize MongoDB connection
 client = MongoClient('mongodb://localhost:27017/')
-db = client['your_database']  # Replace 'your_database' with your database name
+db = client['DB-Con2']  # Replace 'your_database' with your database name
 collection = db['frequent_itemsets']  # Replace 'frequent_itemsets' with your collection name
 
 # Initialize PCY data structures
