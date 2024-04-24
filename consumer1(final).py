@@ -7,7 +7,7 @@ from pymongo import MongoClient
 # Initialize MongoDB client and connect to the database
 client = MongoClient('localhost', 27017)
 db = client['DB-con1']
-collection = db['consumer2_collection']
+collection = db['consumer1_collection']
 
 def apriori_frequent_itemsets(data, min_support=2):
     # Count the occurrences of each product ID
