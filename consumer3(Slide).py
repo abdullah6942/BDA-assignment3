@@ -1,59 +1,66 @@
-from kafka import KafkaConsumer
+from collections import defaultdict
 import json
-from collections import defaultdict, Counter
-from itertools import combinations
 
-def sliding_window_frequent_itemsets(data, window_size=5, min_support=2):
-    # Initialize sliding window and frequent itemsets
-    window = defaultdict(int)
-    frequent_itemsets = Counter()
+# Constants
+MIN_SUPPORT = 10  # Adjust the minimum support threshold as needed
 
-    # Process each item in the data stream
-    for item in data:
-        # Increment the count of the current item in the window
-        window[item] += 1
+# Initialize frequent itemset dictionary
+frequent_itemsets = defaultdict(int)
 
-        # Remove items that fall outside the sliding window
-        if len(window) > window_size:
-            old_item = data[len(data) - window_size - 1]
-            window[old_item] -= 1
-            if window[old_item] == 0:
-                del window[old_item]
+# Function to generate candidate itemsets
+def generate_candidates(transaction):
+    # Generate candidate itemsets based on the transaction
+    candidate_itemsets = []
+    for item in transaction:
+        candidate_itemsets.append((item,))
+    return candidate_itemsets
 
-        # Generate item pairs and update frequent itemsets
-        for pair in combinations(window.keys(), 2):
-            frequent_itemsets[pair] += 1
+# Function to initialize single-item frequent itemsets
+def initialize_single_itemsets(transactions):
+    global frequent_itemsets
+    for transaction in transactions:
+        for item in transaction:
+            frequent_itemsets[(item,)] += 1
 
-    # Filter frequent itemsets by minimum support
-    frequent_itemsets = {itemset: support for itemset, support in frequent_itemsets.items() if support >= min_support}
-    return frequent_itemsets
+# Function to prune infrequent itemsets
+def prune_infrequent_itemsets():
+    global frequent_itemsets
+    # Prune infrequent itemsets from the dictionary
+    frequent_itemsets = {itemset: support for itemset, support in frequent_itemsets.items() if support >= MIN_SUPPORT}
 
-def process_message(msg):
-    try:
-        data = json.loads(msg.value.decode('utf-8'))
-        also_buy_data = data.get('also_buy', [])  # Extract 'also_buy' data or use an empty list if not present
-        frequent_itemsets = sliding_window_frequent_itemsets(also_buy_data)
-        print("Sliding Window frequent itemsets:", frequent_itemsets)
-    except Exception as e:
-        print(f"Error processing message: {e}")
+# Simulate streaming data
+def stream_data():
+    # Simulate streaming data
+    for transaction in stream_data_generator():
+        # Generate candidates and update frequent itemsets with new transaction
+        candidates = generate_candidates(transaction)
+        for candidate in candidates:
+            frequent_itemsets[candidate] += 1
+        # Prune infrequent itemsets
+        prune_infrequent_itemsets()
+        # Output frequent itemsets
+        print_frequent_itemsets()
 
-def consume_data(topic):
-    consumer = KafkaConsumer(
-        topic,
-        bootstrap_servers=['localhost:9092'],
-        auto_offset_reset='earliest',
-        group_id='group3'
-    )
+# Function to simulate streaming data generator (replace with your actual data source)
+def stream_data_generator():
+    # Simulated data source
+    for i in range(10000):
+        yield ['item1', 'item2', 'item3']  # Example transaction format
 
-    try:
-        for message in consumer:
-            process_message(message)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        consumer.close()
+# Function to print frequent itemsets
+def print_frequent_itemsets():
+    # Output frequent itemsets that meet the minimum support threshold
+    for itemset, support in frequent_itemsets.items():
+        if support >= MIN_SUPPORT:
+            print(f"Frequent Itemset: {itemset}, Support: {support}")
+
+# Main function
+def main():
+    # Initialize single-item frequent itemsets
+    initialize_single_itemsets(stream_data_generator())
+    # Process streaming data
+    stream_data()
 
 if __name__ == "__main__":
-    kafka_topic = 'topic1'  # Replace 'topic1' with your actual Kafka topic name for Consumer 3
-    consume_data(kafka_topic)
+    main()
 
